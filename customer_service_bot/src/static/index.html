@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Service Bot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            color: white;
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 300;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 350px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            height: fit-content;
+        }
+
+        .chat-container {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .avatar-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .avatar-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1rem;
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: block;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, filter 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .avatar-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 50% 60%, rgba(255, 255, 255, 0.3) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 2;
+        }
+
+        .avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .avatar.speaking {
+            animation: speaking 0.4s ease-in-out infinite alternate, 
+                       blink 3s ease-in-out infinite,
+                       headMovement 2s ease-in-out infinite;
+            filter: brightness(1.1);
+        }
+
+        .avatar.speaking + .avatar-overlay {
+            opacity: 1;
+            animation: speakingGlow 0.4s ease-in-out infinite alternate;
+        }
+
+        @keyframes speaking {
+            0% { 
+                transform: scale(1) rotateZ(-0.5deg) translateY(0px); 
+                filter: brightness(1.1) contrast(1.05);
+            }
+            25% { 
+                transform: scale(1.01) rotateZ(0deg) translateY(-1px); 
+                filter: brightness(1.15) contrast(1.1);
+            }
+            50% { 
+                transform: scale(1.02) rotateZ(0.5deg) translateY(-2px); 
+                filter: brightness(1.2) contrast(1.15);
+            }
+            75% { 
+                transform: scale(1.01) rotateZ(0deg) translateY(-1px); 
+                filter: brightness(1.15) contrast(1.1);
+            }
+            100% { 
+                transform: scale(1) rotateZ(-0.5deg) translateY(0px); 
+                filter: brightness(1.1) contrast(1.05);
+            }
+        }
+
+        @keyframes blink {
+            0%, 90%, 100% { 
+                filter: brightness(1.1) contrast(1.05); 
+            }
+            95% { 
+                filter: brightness(1.3) contrast(1.2); 
+            }
+        }
+
+        @keyframes headMovement {
+            0%, 100% { 
+                transform: rotateY(0deg) rotateX(0deg); 
+            }
+            25% { 
+                transform: rotateY(2deg) rotateX(1deg); 
+            }
+            50% { 
+                transform: rotateY(0deg) rotateX(-1deg); 
+            }
+            75% { 
+                transform: rotateY(-2deg) rotateX(0deg); 
+            }
+        }
+
+        @keyframes speakingGlow {
+            0% { 
+                opacity: 0.3; 
+                background: radial-gradient(circle at 50% 60%, rgba(255, 255, 255, 0.3) 0%, transparent 50%);
+            }
+            100% { 
+                opacity: 0.6; 
+                background: radial-gradient(circle at 50% 60%, rgba(255, 255, 255, 0.5) 0%, transparent 60%);
+            }
+        }
+
+        .avatar-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .avatar-status {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .knowledge-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .url-input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .url-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .add-btn {
+            padding: 0.75rem 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .add-btn:hover {
+            background: #5a6fd8;
+        }
+
+        .knowledge-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .knowledge-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid #667eea;
+        }
+
+        .knowledge-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .knowledge-source {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .chat-header {
+            background: #667eea;
+            color: white;
+            padding: 1.5rem 2rem;
+            text-align: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+
+        .message {
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .user .message-avatar {
+            background: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .message-content {
+            background: #f8f9fa;
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
+            max-width: 70%;
+            line-height: 1.5;
+        }
+
+        .user .message-content {
+            background: #667eea;
+            color: white;
+        }
+
+        .chat-input-container {
+            padding: 2rem;
+            border-top: 1px solid #e1e5e9;
+            background: white;
+        }
+
+        .chat-input-group {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 25px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            padding: 1rem 2rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .send-btn:hover {
+            background: #5a6fd8;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 1rem;
+            color: #666;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                padding: 1rem;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>AI Customer Service Bot</h1>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="avatar-section">
+                <div class="avatar-container">
+                    <img src="animated_avatar.png" alt="Bot Avatar" class="avatar" id="botAvatar">
+                    <div class="avatar-overlay" id="avatarOverlay"></div>
+                </div>
+                <div class="avatar-name">Sarah - AI Assistant</div>
+                <div class="avatar-status" id="avatarStatus">Ready to help!</div>
+            </div>
+
+            <div class="knowledge-section" style="display: none;">
+                <div class="section-title">
+                    📚 Business Knowledge
+                </div>
+                <div class="url-input-section">
+                    <input type="text" id="urlInput" placeholder="Enter website URL to learn from..." class="url-input">
+                    <button onclick="addUrl()" class="add-button">Add</button>
+                </div>
+                <div class="knowledge-list" id="knowledgeList">
+                    <!-- Knowledge items will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-header">
+                <h2>Chat with our AI Assistant</h2>
+                <p>Ask me anything about our business!</p>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message">
+                    <img src="animated_avatar.png" alt="Bot" class="message-avatar">
+                    <div class="message-content">
+                        Hello! I'm Sarah, your AI customer service assistant. I can help answer questions about our business. You can teach me by adding website URLs in the sidebar, and then I'll be able to provide more specific information!
+                    </div>
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <div>🤖 Thinking...</div>
+            </div>
+
+            <div class="chat-input-container">
+                <div class="chat-input-group">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Type your message here..." onkeypress="handleKeyPress(event)">
+                    <button class="send-btn" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let sessionId = generateSessionId();
+
+        function generateSessionId() {
+            return 'session_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        async function addKnowledge() {
+            const urlInput = document.getElementById('urlInput');
+            const url = urlInput.value.trim();
+            
+            if (!url) {
+                alert('Please enter a valid URL');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/knowledge', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: url })
+                });
+
+                if (response.ok) {
+                    const knowledge = await response.json();
+                    urlInput.value = '';
+                    loadKnowledge();
+                    alert('Knowledge added successfully!');
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.error);
+                }
+            } catch (error) {
+                alert('Error adding knowledge: ' + error.message);
+            }
+        }
+
+        async function loadKnowledge() {
+            try {
+                const response = await fetch('/api/knowledge');
+                const knowledge = await response.json();
+                
+                const knowledgeList = document.getElementById('knowledgeList');
+                knowledgeList.innerHTML = '';
+
+                knowledge.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'knowledge-item';
+                    div.innerHTML = `
+                        <div class="knowledge-title">${item.title}</div>
+                        <div class="knowledge-source">${item.source_type}: ${item.source_url || 'Manual entry'}</div>
+                    `;
+                    knowledgeList.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Error loading knowledge:', error);
+            }
+        }
+
+        async function sendMessage() {
+            const chatInput = document.getElementById('chatInput');
+            const message = chatInput.value.trim();
+            
+            if (!message) return;
+
+            // Add user message to chat
+            addMessageToChat(message, true);
+            chatInput.value = '';
+
+            // Show loading and update avatar status
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('avatarStatus').textContent = 'Thinking...';
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        message: message,
+                        session_id: sessionId
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addMessageToChat(data.response, false);
+                    
+                    // Generate and play speech
+                    if (data.has_speech) {
+                        await playBotSpeech(data.response);
+                    }
+                } else {
+                    addMessageToChat('Sorry, I encountered an error: ' + data.error, false);
+                }
+            } catch (error) {
+                addMessageToChat('Sorry, I encountered an error: ' + error.message, false);
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('avatarStatus').textContent = 'Ready to help!';
+            }
+        }
+
+        async function playBotSpeech(text) {
+            try {
+                // Update avatar status and start animation
+                document.getElementById('avatarStatus').textContent = 'Speaking...';
+                const avatar = document.getElementById('botAvatar');
+
+                // Generate speech
+                const response = await fetch('/api/speech', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+
+                if (response.ok) {
+                    const audioBlob = await response.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audio = new Audio(audioUrl);
+                    
+                    // Start speaking animation when audio starts
+                    audio.onplay = () => {
+                        avatar.classList.add('speaking');
+                    };
+                    
+                    // Stop animation when audio ends
+                    audio.onended = () => {
+                        avatar.classList.remove('speaking');
+                        document.getElementById('avatarStatus').textContent = 'Ready to help!';
+                        URL.revokeObjectURL(audioUrl);
+                    };
+                    
+                    // Handle audio errors
+                    audio.onerror = () => {
+                        avatar.classList.remove('speaking');
+                        document.getElementById('avatarStatus').textContent = 'Ready to help!';
+                        URL.revokeObjectURL(audioUrl);
+                    };
+                    
+                    // Add visual feedback for audio loading
+                    document.getElementById('avatarStatus').textContent = 'Preparing to speak...';
+                    
+                    audio.play().catch(error => {
+                        console.error('Audio playback failed:', error);
+                        avatar.classList.remove('speaking');
+                        document.getElementById('avatarStatus').textContent = 'Ready to help!';
+                    });
+                } else {
+                    document.getElementById('avatarStatus').textContent = 'Ready to help!';
+                }
+            } catch (error) {
+                console.error('Speech generation error:', error);
+                document.getElementById('botAvatar').classList.remove('speaking');
+                document.getElementById('avatarStatus').textContent = 'Ready to help!';
+            }
+        }
+
+        function addMessageToChat(message, isUser) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : ''}`;
+            
+            if (isUser) {
+                messageDiv.innerHTML = `
+                    <div class="message-avatar">U</div>
+                    <div class="message-content">${message}</div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <img src="animated_avatar.png" alt="Bot" class="message-avatar">
+                    <div class="message-content">${message}</div>
+                `;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Load knowledge on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadKnowledge();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Business Knowledge Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .admin-content {
+            padding: 2rem;
+        }
+
+        .knowledge-section {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .url-input-section {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .url-input {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .add-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .add-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .knowledge-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .knowledge-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .knowledge-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .knowledge-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .knowledge-url {
+            color: #667eea;
+            font-size: 0.9rem;
+            text-decoration: none;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .knowledge-url:hover {
+            text-decoration: underline;
+        }
+
+        .knowledge-content {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            max-height: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            background: #f0f0f0;
+            color: #333;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            text-decoration: none;
+            margin-bottom: 2rem;
+            transition: background 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Admin Panel</h1>
+            <p>Business Knowledge Management System</p>
+        </div>
+
+        <div class="admin-content">
+            <a href="/" class="back-link">← Back to Customer Interface</a>
+
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalKnowledge">0</div>
+                    <div class="stat-label">Knowledge Items</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalConversations">0</div>
+                    <div class="stat-label">Conversations</div>
+                </div>
+            </div>
+
+            <div class="knowledge-section">
+                <div class="section-title">
+                    📚 Add Business Knowledge
+                </div>
+                <div class="url-input-section">
+                    <input type="text" id="urlInput" placeholder="Enter website URL to learn from..." class="url-input">
+                    <button onclick="addUrl()" class="add-button">Add Knowledge</button>
+                </div>
+                <div class="knowledge-list" id="knowledgeList">
+                    <div class="loading">Loading knowledge base...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let sessionId = 'admin-' + Date.now();
+
+        // Load knowledge on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadKnowledge();
+            loadStats();
+        });
+
+        async function loadKnowledge() {
+            try {
+                const response = await fetch('/api/knowledge');
+                const data = await response.json();
+                
+                const knowledgeList = document.getElementById('knowledgeList');
+                
+                if (data.length === 0) {
+                    knowledgeList.innerHTML = '<div class="loading">No knowledge items yet. Add some URLs to get started!</div>';
+                    return;
+                }
+                
+                knowledgeList.innerHTML = data.map(item => `
+                    <div class="knowledge-item">
+                        <div class="knowledge-title">${item.title}</div>
+                        <a href="${item.url}" target="_blank" class="knowledge-url">${item.url}</a>
+                        <div class="knowledge-content">${item.content.substring(0, 200)}${item.content.length > 200 ? '...' : ''}</div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('totalKnowledge').textContent = data.length;
+            } catch (error) {
+                console.error('Error loading knowledge:', error);
+                document.getElementById('knowledgeList').innerHTML = '<div class="loading">Error loading knowledge base.</div>';
+            }
+        }
+
+        async function loadStats() {
+            try {
+                // This would typically load from a stats endpoint
+                // For now, we'll just show the knowledge count
+                const response = await fetch('/api/knowledge');
+                const data = await response.json();
+                document.getElementById('totalKnowledge').textContent = data.length;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function addUrl() {
+            const urlInput = document.getElementById('urlInput');
+            const url = urlInput.value.trim();
+            
+            if (!url) {
+                alert('Please enter a URL');
+                return;
+            }
+
+            // Show loading state
+            const addButton = document.querySelector('.add-button');
+            const originalText = addButton.textContent;
+            addButton.textContent = 'Adding...';
+            addButton.disabled = true;
+
+            try {
+                const response = await fetch('/api/add-url', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: url })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    urlInput.value = '';
+                    loadKnowledge(); // Reload the knowledge list
+                    loadStats(); // Update stats
+                    alert('Knowledge added successfully!');
+                } else {
+                    alert('Error adding knowledge: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error adding knowledge: ' + error.message);
+            } finally {
+                addButton.textContent = originalText;
+                addButton.disabled = false;
+            }
+        }
+
+        // Allow Enter key to add URL
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addUrl();
+            }
+        });
+    </script>
+</body>
+</html>
+
